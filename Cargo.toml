@@ -1,7 +1,9 @@
 [package]
-name = "LoLClientHelper"
+name = "lol_client_helper"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
 lol-game-client-api = { git = "https://github.com/chanmaoganda/LoLGameClientAPI.git" }
+client_api = { path = "crates/client_api" }
+tokio = "1.38.0"
