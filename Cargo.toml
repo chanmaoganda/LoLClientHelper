@@ -1,0 +1,7 @@
+[package]
+name = "LoLClientHelper"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+lol-game-client-api = { git = "https://github.com/chanmaoganda/LoLGameClientAPI.git" }
