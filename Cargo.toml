@@ -7,3 +7,13 @@ edition = "2021"
 lol-game-client-api = { git = "https://github.com/chanmaoganda/LoLGameClientAPI.git" }
 client_api = { path = "crates/client_api" }
 tokio = "1.38.0"
+
+[workspace]
+members = [
+    "crates/client_api",
+]
+
+[workspace.dependencies]
+reqwest = { version = "0.12.5", features = ["json"] }
+anyhow = "^1.0"
+thiserror = "^1.0"
