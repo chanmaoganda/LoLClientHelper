@@ -17,8 +17,8 @@ impl Default for LoLClient {
     }
 }
 
-fn get_riot_certificate() -> Certificate{
-    Certificate::from_pem(include_bytes!("riotgames.cer")).unwrap()
+fn get_riot_certificate() -> Certificate {
+    Certificate::from_pem(include_bytes!("riotgames.pem")).unwrap()
 }
 
 impl LoLClient {
@@ -26,11 +26,12 @@ impl LoLClient {
         Self::from_certificate(get_riot_certificate()).unwrap()
     }
 
-    async fn get_data<T, U>(&self, endpoint: U) -> Result<T, ClientError>
+    async fn get_data<T, U>(&self, url: U) -> Result<T, ClientError>
         where T: for<'de> Deserialize<'de>,
               U: IntoUrl 
     {
-        let data = self.client.get(endpoint).send().await?.json::<T>().await?;
+        let data = self.client.get(url).send().await?
+           .json::<T>().await?;
         Ok(data)
     }
 
@@ -107,6 +108,65 @@ pub enum LoLInfoWrapper {
     PlayerList(Vec<Player>),
     EventData(Events),
     GameStats(GameData),
+}
+
+impl LoLInfoWrapper {
+    pub fn all_game_data(self) -> Result<AllGameData, ClientError> {
+        if let LoLInfoWrapper::AllGameData(data) = self {
+            return Ok(data);
+        }
+        Err(ClientError::UnpackError("LoLInfoWrapper is not AllGameData".to_string()))
+    }
+
+    pub fn active_player(self) -> Result<ActivePlayer, ClientError> {
+        if let LoLInfoWrapper::ActivePlayer(data) = self {
+            return Ok(data);
+        }
+        Err(ClientError::UnpackError("LoLInfoWrapper is not ActivePlayer".to_string()))
+    }
+
+    pub fn active_player_name(self) -> Result<String, ClientError> {
+        if let LoLInfoWrapper::ActivePlayerName(data) = self {
+            return Ok(data);
+        }
+        Err(ClientError::UnpackError("LoLInfoWrapper is not ActivePlayerName".to_string()))
+    }
+
+    pub fn active_player_abilities(self) -> Result<Abilities, ClientError> {
+        if let LoLInfoWrapper::ActivePlayerAbilities(data) = self {
+            return Ok(data);
+        }
+        Err(ClientError::UnpackError("LoLInfoWrapper is not ActivePlayerAbilities".to_string()))
+    }
+
+    pub fn active_player_runes(self) -> Result<FullRunes, ClientError> {
+        if let LoLInfoWrapper::ActivePlayerRunes(data) = self {
+            return Ok(data);
+        }
+        Err(ClientError::UnpackError("LoLInfoWrapper is not ActivePlayerRunes".to_string()))
+    }
+
+    pub fn player_list(self) -> Result<Vec<Player>, ClientError> {
+        if let LoLInfoWrapper::PlayerList(data) = self {
+            return Ok(data);
+        }
+        Err(ClientError::UnpackError("LoLInfoWrapper is not PlayerList".to_string()))
+    }
+
+    pub fn event_data(self) -> Result<Events, ClientError> {
+        if let LoLInfoWrapper::EventData(data) = self {
+            return Ok(data);
+        }
+        Err(ClientError::UnpackError("LoLInfoWrapper is not EventData".to_string()))
+    }
+
+    pub fn game_stats(self) -> Result<GameData, ClientError> {
+        if let LoLInfoWrapper::GameStats(data) = self {
+            return Ok(data);
+        }
+        Err(ClientError::UnpackError("LoLInfoWrapper is not GameStats".to_string()))
+    }
+
 }
 
 lazy_static! {

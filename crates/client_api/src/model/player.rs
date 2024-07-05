@@ -47,8 +47,8 @@ pub struct SummonerSpell {
 #[derive(Deserialize, Debug, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct SummonerSpells {
-    pub first_summoner_spell: SummonerSpell,
-    pub second_summoner_spell: SummonerSpell,
+    pub summoner_spell_one: SummonerSpell,
+    pub summoner_spell_two: SummonerSpell,
 }
 
 #[derive(Deserialize, Debug, Clone, PartialEq)]
@@ -60,6 +60,7 @@ pub enum Team {
 }
 
 #[derive(Deserialize, Debug, Clone, PartialEq)]
+#[serde(rename_all = "camelCase")]
 pub struct Ability {
     pub ability_level: Option<u8>,
     pub display_name: String,

@@ -1,13 +1,10 @@
-use lol_game_client_api::api::GameClient;
+use client_api::{some_test_printing, LoLClient};
 use tokio;
 
 #[tokio::main]
-async fn main() {
-    let client = GameClient::new();
-    let active_player = client.active_player().await.unwrap();
-    
-    println!("Stats Runes: {:?}", active_player.full_runes.stat_runes);
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    some_test_printing::test_all().await?;
 
-    let players = client.player_list().await.unwrap();
-    
+    Ok(())
 }
+

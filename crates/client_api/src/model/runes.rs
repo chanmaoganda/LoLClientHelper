@@ -37,8 +37,8 @@ pub struct PartialRunes {
 #[serde(rename_all = "camelCase")]
 pub struct FullRunes {
     pub keystone: Rune,
-    pub primary_tree: RuneTree,
-    pub secondary_tree: RuneTree,
+    pub primary_rune_tree: RuneTree,
+    pub secondary_rune_tree: RuneTree,
     pub general_runes: Vec<Rune>,
     pub stat_runes: [StatRune; 3],
 }
