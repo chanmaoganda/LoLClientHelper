@@ -27,6 +27,14 @@ pub struct StatRune {
 
 #[derive(Deserialize, Debug, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]
+pub struct PartialRunes {
+    pub keystone: Rune,
+    pub primary_rune_tree: RuneTree,
+    pub secondary_rune_tree: RuneTree,
+}
+
+#[derive(Deserialize, Debug, Clone, PartialEq)]
+#[serde(rename_all = "camelCase")]
 pub struct FullRunes {
     pub keystone: Rune,
     pub primary_tree: RuneTree,

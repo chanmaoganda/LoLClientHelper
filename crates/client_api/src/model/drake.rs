@@ -1,7 +1,7 @@
 use serde::Deserialize;
 
 
-#[derive(Deserialize, Debug, PartialEq, Clone)]
+#[derive(Deserialize, Debug, Clone, PartialEq)]
 pub enum Drake {
     ChemtechDrake,
     CloudDrake,
