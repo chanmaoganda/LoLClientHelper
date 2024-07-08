@@ -3,6 +3,11 @@ use serde::Deserialize;
 use super::PartialRunes;
 
 #[derive(Deserialize, Debug, Clone, PartialEq)]
+pub struct Champion {
+    pub id: u32,
+}
+
+#[derive(Deserialize, Debug, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct Player {
     pub champion_name: String,

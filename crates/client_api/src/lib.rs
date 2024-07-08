@@ -5,7 +5,7 @@ mod error;
 pub use client::LoLClient;
 pub use client::LoLInfoIdentifier::{*};
 
-pub use model::{Abilities, ActivePlayer, AllGameData, Drake, Player};
+pub use model::{Abilities, ActivePlayer, AllGameData, Drake, Player, Champion};
 
 
 
