@@ -1,3 +1,5 @@
+use lazy_static::lazy_static;
+use league_model::{GameHistoryQuery, ModelError, PartialSummoner};
 use reqwest::{Certificate, Client, ClientBuilder};
 use serde::Deserialize;
 
@@ -8,10 +10,6 @@ use crate::web_socket::{get_authorize_info, AuthorizeInfo, LcuError};
 pub struct LcuClient {
     client: Client,
     auth_info: AuthorizeInfo,
-}
-
-fn get_riot_certificate() -> Certificate {
-    Certificate::from_pem(include_bytes!("riotgames.pem")).unwrap()
 }
 
 impl LcuClient {
@@ -29,22 +27,80 @@ impl LcuClient {
         })
     }
 
-    pub async fn send<T>(&self, endpoint: &str) -> Result<T, reqwest::Error>
-        where T : for<'de> Deserialize<'de>, {
-        let url = format!("https://127.0.0.1:{}{}", self.auth_info.port, endpoint);
-        println!("Sending request to {}", url);
-        let a = self.client.get(url.clone())
-           .header(reqwest::header::ACCEPT, "application/json")
-           .header("Authorization", &self.auth_info.auth_token)
-           .send().await?
-           .text().await?;
-        println!("Received response: {}", a);
+    fn endpoint_url(&self, endpoint: &str) -> String {
+        format!("https://127.0.0.1:{}{}", self.auth_info.port, endpoint)
+    }
 
-        let response = self.client.get(url.clone())
+    pub async fn get<T>(&self, endpoint: &str) -> Result<T, reqwest::Error>
+        where T : for<'de> Deserialize<'de>, {
+        let url = self.endpoint_url(endpoint);
+        let response = self.client.get(url)
            .header("Authorization", &self.auth_info.auth_token)
            .send().await?
            .json::<T>().await?;
-        println!("Received response");
         Ok(response)
     }
+
+    pub async fn post<T> (&self, endpoint: &str) -> Result<T, reqwest::Error>
+        where T: for<'de> Deserialize<'de>, {
+        let url = self.endpoint_url(endpoint);
+        let response = self.client.post(url)
+           .header("Authorization", &self.auth_info.auth_token)
+           .send().await?
+           .json::<T>().await?;
+        Ok(response)
+    }
+
+    pub async fn get_text(&self, endpoint: &str) -> Result<String, reqwest::Error> {
+        let url = self.endpoint_url(endpoint);
+        let response = self.client.get(url)
+           .header("Authorization", &self.auth_info.auth_token)
+           .send().await?
+           .text().await?;
+        Ok(response)
+    }
+
+    pub async fn post_text(&self, endpoint: &str) -> Result<String, reqwest::Error> {
+        let url = self.endpoint_url(endpoint);
+        let response = self.client.post(url)
+           .header("Authorization", &self.auth_info.auth_token)
+           .send().await?
+           .text().await?;
+        Ok(response)
+    }
+
+}
+
+impl LcuClient {
+    fn index_range_query(start: u32, end: u32) -> String {
+        format!("?begIndex={}&endIndex={}", start, end)
+    }
+
+    pub async fn get_team_summoners(&self) -> Result<Vec<PartialSummoner>, ModelError> {
+        let slot_ids = vec![0, 1, 2, 3, 4];
+        let mut summoners: Vec<PartialSummoner> = Vec::with_capacity(5);
+        for slot_id in slot_ids {
+            let summoner = 
+                self.get(&format!("/lol-champ-select/v1/summoners/{}", slot_id)).await
+                .map_err(|_| ModelError::SummonerNotFound)?;
+            summoners.push(summoner);
+        }
+        Ok(summoners)
+    }
+
+    pub async fn get_summoner_match_history(&self, summoner: PartialSummoner) -> Result<GameHistoryQuery, ModelError> {
+        let url = format!("/lol-match-history/v1/products/lol/{}/matches{}", summoner.puuid, Self::index_range_query(0, 30));
+        let history = self.get(&url)
+            .await.map_err(|_| ModelError::HistoryNotFound)?;
+
+        Ok(history)
+    }
+}
+
+fn get_riot_certificate() -> Certificate {
+    Certificate::from_pem(include_bytes!("riotgames.pem")).unwrap()
+}
+
+lazy_static! {
+
 }

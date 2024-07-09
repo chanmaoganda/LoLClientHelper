@@ -9,5 +9,4 @@ pub struct Summoner {
     pub puuid: String,
     #[serde(rename = "summonerId")]
     pub summoner_id: u64,
-    pub summoner_level: u32,
 }

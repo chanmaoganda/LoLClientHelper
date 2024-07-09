@@ -1,11 +1,8 @@
 use serde::Deserialize;
 
-use super::PartialRunes;
+use crate::common::PartialRunes;
 
-#[derive(Deserialize, Debug, Clone, PartialEq)]
-pub struct Champion {
-    pub id: u32,
-}
+
 
 #[derive(Deserialize, Debug, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]

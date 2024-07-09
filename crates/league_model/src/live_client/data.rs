@@ -1,6 +1,7 @@
 use serde::Deserialize;
 
-use super::{event::Events, player::{Abilities, ChampionStats}, FullRunes, Player};
+use super::{event::Events, player::{Abilities, ChampionStats}, Player};
+use crate::common::FullRunes;
 
 #[derive(Deserialize, Debug, Clone, PartialEq)]
 pub enum GameMode {

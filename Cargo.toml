@@ -6,17 +6,19 @@ edition = "2021"
 [dependencies]
 client_api = { path = "crates/client_api" }
 lcu_api = { path = "crates/lcu_api" }
+league_model = { path = "crates/league_model" }
 
-tokio = { workspace = true }
 # druid = { workspace = true }
+tokio = { workspace = true }
 anyhow = { workspace = true }
-# irelia = { workspace = true }
-# shaco = "0.6.0"
+serde = { workspace = true }
+serde_json = { workspace = true }
 
 [workspace]
 members = [
     "crates/client_api",
-    "crates/lcu_api"
+    "crates/lcu_api",
+    "crates/league_model"
 ]
 
 [workspace.dependencies]
@@ -27,7 +29,7 @@ thiserror = "^1.0"
 druid = "0.8.3"
 sysinfo = { version = "0.30.12" }
 regex = { version = "1.5.4" }
-# irelia = { version = "0.6.10" , features = ["ws"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+league_model = { path = "crates/league_model" }
 

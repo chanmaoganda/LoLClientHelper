@@ -98,6 +98,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "lazy_static",
+ "league_model",
  "reqwest",
  "serde",
  "serde_json",
@@ -466,10 +467,20 @@ version = "0.1.0"
 dependencies = [
  "base64",
  "lazy_static",
+ "league_model",
  "reqwest",
  "serde",
  "serde_json",
  "sysinfo",
+ "thiserror",
+]
+
+[[package]]
+name = "league_model"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
  "thiserror",
 ]
 
@@ -508,6 +519,9 @@ dependencies = [
  "anyhow",
  "client_api",
  "lcu_api",
+ "league_model",
+ "serde",
+ "serde_json",
  "tokio",
 ]
 
