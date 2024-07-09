@@ -14,7 +14,9 @@ pub fn get_authorize_info() -> Result<AuthorizeInfo, LcuError>{
 
     let args = system
         .processes_by_name(TARGET_PROCESS)
-        .nth(0).unwrap().cmd();
+        .nth(0)
+        .ok_or(LcuError::ProcessNotFound)?
+        .cmd();
 
     let port = args
         .iter()
@@ -31,6 +33,6 @@ pub fn get_authorize_info() -> Result<AuthorizeInfo, LcuError>{
                 .to_string()
         })
         .ok_or(LcuError::TokenNotFound)?;
-
-    Ok(AuthorizeInfo::new(port, general_purpose::STANDARD.encode(format!("riot:{}", auth_token))))
+    let encoded_token = general_purpose::STANDARD.encode(format!("riot:{}", auth_token));
+    Ok(AuthorizeInfo::new(port, format!("Basic {}", encoded_token)))
 }
