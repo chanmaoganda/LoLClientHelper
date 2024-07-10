@@ -8,12 +8,10 @@ pub use league_app::LeagueApp;
 fn main() -> Result<(), eframe::Error> {
     env_logger::init();
     free_window::hide_console_window();
-
-    let app = LeagueApp::new();
     
     let main_win_opts = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
-            .with_inner_size([640., 460.]),
+            .with_inner_size([720., 460.]),
         persist_window: true,
         ..Default::default()
     };
@@ -21,8 +19,8 @@ fn main() -> Result<(), eframe::Error> {
     eframe::run_native(
         "Match History",
         main_win_opts,
-        Box::new(move |_| {
-            Ok(Box::new(app))
+        Box::new(move |cc| {
+            Ok(Box::new(LeagueApp::new(cc)))
         }),
     )?;
 

@@ -9,7 +9,8 @@ pub struct LeagueApp {
 }
 
 impl LeagueApp {
-    pub fn new() -> Self {
+    pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
+        Self::customize_font(&cc.egui_ctx);
         Self {
             lcu_client: Arc::new(RwLock::new(lcu_api::LcuClient::new())),
             histories: Arc::new(RwLock::new(vec![])),
@@ -37,6 +38,18 @@ impl LeagueApp {
 
 impl eframe::App for LeagueApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        
+        let mut style = (*ctx.style()).clone();
+        style.text_styles = [
+            (egui::TextStyle::Heading, egui::FontId::new(12.0, egui::FontFamily::Proportional)),
+            (egui::TextStyle::Body, egui::FontId::new(11.0, egui::FontFamily::Proportional)),
+            (egui::TextStyle::Monospace, egui::FontId::new(8.0, egui::FontFamily::Proportional)),
+            (egui::TextStyle::Button, egui::FontId::new(14.0, egui::FontFamily::Proportional)),
+            (egui::TextStyle::Small, egui::FontId::new(10.0, egui::FontFamily::Proportional)),
+        ]
+        .into();
+        ctx.set_style(style);
+
         egui_extras::install_image_loaders(ctx);
         CentralPanel::default().show(ctx, |ui| {
             self.render_refresh_button(ui);
@@ -64,7 +77,9 @@ impl LeagueApp {
             log::debug!("rendering player {}", slot + 1);
             let games = &history.game_history.game_list;
             ui.add_space(PADDING);
-            ui.add(Label::new(format!("player {} game history: ", slot + 1)));
+            let header = egui::RichText::new(format!("player {} game history: ", slot + 1))
+                .font(egui::FontId::new(14.0, egui::FontFamily::Proportional));
+            ui.label(header);
             ui.add_space(PADDING);
             for (index, game) in games.iter().enumerate() {
                 if index == 5 {
@@ -84,6 +99,19 @@ impl LeagueApp {
             }
             ui.separator();
         }
+    }
+
+    fn customize_font(ctx: &egui::Context) {
+        let mut fonts = egui::FontDefinitions::default();
+        fonts.font_data.insert("consola".to_owned(),
+            egui::FontData::from_static(include_bytes!("../../../assets/consola_mono/ConsolaMono-Book.ttf")));
+        fonts.families.entry(
+            egui::FontFamily::Proportional).or_default()
+            .insert(0, "consola".to_owned());
+        fonts.families.entry(
+            egui::FontFamily::Monospace).or_default()
+            .insert(0, "consola".to_owned());
+        ctx.set_fonts(fonts);
     }
 
 }
