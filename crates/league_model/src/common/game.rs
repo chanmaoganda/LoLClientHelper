@@ -5,11 +5,11 @@ use crate::{Participant, ParticipantIdentity};
 #[derive(Deserialize, Debug, Clone, PartialEq)]
 pub struct GameHistoryQuery {
     #[serde(rename = "accountId")]
-    account_id: u64,
+    pub account_id: u64,
     #[serde(rename = "platformId")]
-    platform_id: String,
+    pub platform_id: String,
     #[serde(rename = "games")]
-    game_history: GameHistory,
+    pub game_history: GameHistory,
 }
 
 #[derive(Deserialize, Debug, Clone, PartialEq)]
@@ -20,6 +20,10 @@ pub struct GameHistory {
     game_index_end: u32,
     #[serde(rename = "games")]
     game_list: Vec<Game>,    
+}
+
+impl GameHistory {
+    
 }
 
 #[derive(Deserialize, Debug, Clone, PartialEq)]

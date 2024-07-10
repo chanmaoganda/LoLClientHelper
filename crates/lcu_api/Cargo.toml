@@ -10,6 +10,7 @@ serde_json = { workspace = true }
 reqwest = { workspace = true }
 thiserror = { workspace = true }
 league_model = { workspace = true }
+anyhow = { workspace = true }
 
 lazy_static = "1.5.0"
 base64 = { version = "0.22.1" }

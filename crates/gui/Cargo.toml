@@ -1,0 +1,11 @@
+[package]
+name = "gui"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+eframe = { version = "0.28.1" }
+league_model ={ workspace = true }
+lcu_api = { workspace = true }
+anyhow = { workspace = true }
+tokio = { workspace = true }

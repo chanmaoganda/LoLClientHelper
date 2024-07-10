@@ -1,6 +1,6 @@
 use serde::Deserialize;
 
-use super::partial_summoner::PartialSummoner;
+use crate::Summoner;
 
 #[derive(Deserialize, Debug, Clone, PartialEq)]
 pub struct Champion {
@@ -11,7 +11,7 @@ pub struct Champion {
 pub struct ParticipantIdentity {
     #[serde(rename = "participantId")]
     participant_id: u32,
-    player: PartialSummoner,
+    player: Summoner,
 }
 
 #[derive(Deserialize, Debug, Clone, PartialEq)]

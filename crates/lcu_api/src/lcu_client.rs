@@ -1,8 +1,7 @@
 use lazy_static::lazy_static;
-use league_model::{GameHistoryQuery, ModelError, PartialSummoner};
+use league_model::{GameHistoryQuery, ModelError, Summoner};
 use reqwest::{Certificate, Client, ClientBuilder};
 use serde::Deserialize;
-
 
 use crate::web_socket::{get_authorize_info, AuthorizeInfo, LcuError};
 
@@ -76,24 +75,38 @@ impl LcuClient {
         format!("?begIndex={}&endIndex={}", start, end)
     }
 
-    pub async fn get_team_summoners(&self) -> Result<Vec<PartialSummoner>, ModelError> {
+    pub async fn get_team_summoners(&self) -> anyhow::Result<Vec<Summoner>> {
         let slot_ids = vec![0, 1, 2, 3, 4];
-        let mut summoners: Vec<PartialSummoner> = Vec::with_capacity(5);
+        let mut summoners = Vec::with_capacity(5);
         for slot_id in slot_ids {
-            let summoner = 
-                self.get(&format!("/lol-champ-select/v1/summoners/{}", slot_id)).await
-                .map_err(|_| ModelError::SummonerNotFound)?;
+            let summoner: Summoner = 
+                self.get(&format!("/lol-champ-select/v1/summoners/{}", slot_id))
+                .await?;
+            if summoner.puuid.is_empty() {
+                continue;
+            }
             summoners.push(summoner);
         }
         Ok(summoners)
     }
 
-    pub async fn get_summoner_match_history(&self, summoner: PartialSummoner) -> Result<GameHistoryQuery, ModelError> {
+    pub async fn get_summoner_match_history(&self, summoner: Summoner) -> Result<GameHistoryQuery, ModelError> {
+
         let url = format!("/lol-match-history/v1/products/lol/{}/matches{}", summoner.puuid, Self::index_range_query(0, 30));
         let history = self.get(&url)
             .await.map_err(|_| ModelError::HistoryNotFound)?;
 
         Ok(history)
+    }
+
+    pub async fn get_summoner_match_histories(&self) -> anyhow::Result<Vec<GameHistoryQuery>> {
+        let summoners = self.get_team_summoners().await?;
+        let mut histories = Vec::with_capacity(5);
+        for summoner in summoners {
+            let history = self.get_summoner_match_history(summoner).await?;
+            histories.push(history);
+        }
+        Ok(histories)
     }
 }
 
