@@ -5,6 +5,8 @@ edition = "2021"
 
 [dependencies]
 eframe = { version = "0.28.1" }
+egui_extras = { version = "*", features = ["all_loaders"] }
+image = { version = "0.25", features = ["png"] }
 winapi = {version = "0.3", features = ["wincon", "winuser"]}
 
 league_model ={ workspace = true }

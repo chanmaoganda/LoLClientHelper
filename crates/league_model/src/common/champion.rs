@@ -33,9 +33,17 @@ lazy_static! {
 }
 
 impl Participant {
-    pub fn full_info(&self) -> String {
+    pub fn name_title(&self) -> String {
         let champion = HANDLER.get_champion_by_id(self.champion_id);
-        format!("Champion: {}, KDA: {}/{}/{} Win: {}", champion.name_title(), self.stats.kills, self.stats.deaths, self.stats.assists, self.stats.win)
+        champion.name_title()
+    }
+
+    pub fn kda_result(&self) -> String {
+        format!("KDA: {}/{}/{} Win: {}", self.stats.kills, self.stats.deaths, self.stats.assists, self.stats.win)
+    }
+
+    pub fn champion_key(&self) -> &u32 {
+        &self.champion_id
     }
 }
 

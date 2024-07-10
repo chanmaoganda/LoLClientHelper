@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use eframe::egui::{self, mutex::RwLock, CentralPanel, Label, ScrollArea};
+use eframe::egui::{self, mutex::RwLock, CentralPanel, Image, Label, ScrollArea, Vec2};
 use league_model::GameHistoryQuery;
 
 pub struct LeagueApp {
@@ -37,7 +37,7 @@ impl LeagueApp {
 
 impl eframe::App for LeagueApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-
+        egui_extras::install_image_loaders(ctx);
         CentralPanel::default().show(ctx, |ui| {
             self.render_refresh_button(ui);
             ScrollArea::vertical().show(ui, |ui| {
@@ -70,8 +70,17 @@ impl LeagueApp {
                 if index == 5 {
                     break;
                 }
-                ui.add(Label::new(game.get_game_info()));
-                ui.add(Label::new(game.get_player_info()));
+                let champion_icon_url = game.get_champion_icon_url();
+                ui.horizontal(|ui| {
+                    ui.add(Image::new(champion_icon_url).fit_to_exact_size(Vec2::new(30., 30.)));
+                    ui.add_space(10.);
+                    ui.vertical(|ui| {
+                        ui.add(Label::new(game.get_game_info()));
+                        ui.add(Label::new(game.get_player_info()));
+                        ui.add(Label::new(game.get_kda_result()));
+                    });
+                });
+                ui.add_space(3.);
             }
             ui.separator();
         }

@@ -53,6 +53,17 @@ impl Game {
     }
 
     pub fn get_player_info(&self) -> String {
-        format!("player info: {}", self.participants.get(0).unwrap().full_info())
+        let champion = self.participants.get(0).unwrap();
+        format!("player info: {}", champion.name_title())
+    }
+
+    pub fn get_kda_result(&self) -> String {
+        let champion = self.participants.get(0).unwrap();
+        champion.kda_result()
+    }
+
+    pub fn get_champion_icon_url(&self) -> String {
+        format!("https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/{}.png", 
+            self.participants.get(0).unwrap().champion_key())
     }
 }
