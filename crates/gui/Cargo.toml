@@ -5,7 +5,11 @@ edition = "2021"
 
 [dependencies]
 eframe = { version = "0.28.1" }
+winapi = {version = "0.3", features = ["wincon", "winuser"]}
+
 league_model ={ workspace = true }
 lcu_api = { workspace = true }
 anyhow = { workspace = true }
 tokio = { workspace = true }
+env_logger = { workspace = true }
+log = { workspace = true }

@@ -92,7 +92,7 @@ impl LcuClient {
 
     pub async fn get_summoner_match_history(&self, summoner: Summoner) -> Result<GameHistoryQuery, ModelError> {
 
-        let url = format!("/lol-match-history/v1/products/lol/{}/matches{}", summoner.puuid, Self::index_range_query(0, 30));
+        let url = format!("/lol-match-history/v1/products/lol/{}/matches{}", summoner.puuid, Self::index_range_query(0, 5));
         let history = self.get(&url)
             .await.map_err(|_| ModelError::HistoryNotFound)?;
 
@@ -101,7 +101,7 @@ impl LcuClient {
 
     pub async fn get_summoner_match_histories(&self) -> anyhow::Result<Vec<GameHistoryQuery>> {
         let summoners = self.get_team_summoners().await?;
-        let mut histories = Vec::with_capacity(5);
+        let mut histories = Vec::with_capacity(10);
         for summoner in summoners {
             let history = self.get_summoner_match_history(summoner).await?;
             histories.push(history);

@@ -1,6 +1,7 @@
 use serde::Deserialize;
+use lazy_static::lazy_static;
 
-use crate::Summoner;
+use crate::{ConstHandler, Summoner};
 
 #[derive(Deserialize, Debug, Clone, PartialEq)]
 pub struct Champion {
@@ -27,13 +28,24 @@ pub struct Participant {
     team_id: u16,
 }
 
+lazy_static! {
+    static ref HANDLER: ConstHandler = ConstHandler::new();
+}
+
+impl Participant {
+    pub fn full_info(&self) -> String {
+        let champion = HANDLER.get_champion_by_id(self.champion_id);
+        format!("Champion: {}, KDA: {}/{}/{} Win: {}", champion.name_title(), self.stats.kills, self.stats.deaths, self.stats.assists, self.stats.win)
+    }
+}
+
 #[derive(Deserialize, Debug, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct ChampionRecord {
-    champ_level: u16,
-    kills: u16,
-    deaths: u16,
-    assists: u16,
-    win: bool,
+    pub champ_level: u16,
+    pub kills: u16,
+    pub deaths: u16,
+    pub assists: u16,
+    pub win: bool,
     // we can add more info about that
 }
