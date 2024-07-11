@@ -6,6 +6,8 @@ use league_model::GameHistoryQuery;
 pub struct LeagueApp {
     pub lcu_client: Arc<RwLock<lcu_api::LcuClient>>,
     pub histories: Arc<RwLock<Vec<GameHistoryQuery>>>,
+    pub filtered_histories: Arc<RwLock<Vec<GameHistoryQuery>>>,
+    pub is_classic_mode: bool,
 }
 
 /// functional implement block
@@ -15,6 +17,8 @@ impl LeagueApp {
         Self {
             lcu_client: Arc::new(RwLock::new(lcu_api::LcuClient::new())),
             histories: Arc::new(RwLock::new(vec![])),
+            filtered_histories: Arc::new(RwLock::new(vec![])),
+            is_classic_mode: false,
         }
     }
 
@@ -22,9 +26,12 @@ impl LeagueApp {
         log::info!("Fetching match history");
         let rt = tokio::runtime::Runtime::new().unwrap();
         let histories_task = self.histories.clone();
+        let filtered_histories_task = self.filtered_histories.clone();
         let lcu_task = self.lcu_client.clone();
         rt.block_on(async move {
             let mut histories = histories_task.write();
+            let mut filtered_history = filtered_histories_task.write();
+
             let expect_history = lcu_task.read().get_summoner_match_histories().await.unwrap();
             
             if expect_history.is_empty() {
@@ -32,20 +39,33 @@ impl LeagueApp {
                 return;
             }
             histories.clear();
-            histories.extend(expect_history);
+            histories.extend(expect_history.clone());
+
+            filtered_history.clear();
+            filtered_history.extend(expect_history.clone());
+
+            log::info!("History Updated!");
         });
-        log::info!("Done fetching match history");
         log::info!("Match history size: {}", self.histories.read().len());
         Ok(self.histories.read().len() > 0)
     }
 
-
+    fn filter_by_mode(&mut self) {
+        let mut histories = self.filtered_histories.write();
+        if !self.is_classic_mode {
+            return;
+        }
+        log::info!("filtering history by mode");
+        histories.iter_mut().for_each(|query|{
+            let games = &mut query.game_history.game_list;
+            games.retain(|game| game.get_game_mode() == "CLASSIC");
+        });
+    }
 }
 
 impl eframe::App for LeagueApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         self.set_font_style(ctx);
-
         egui_extras::install_image_loaders(ctx);
         CentralPanel::default().show(ctx, |ui| {
             self.render_refresh_button(ui);
@@ -63,30 +83,20 @@ impl LeagueApp {
         ui.horizontal(|ui| {
             if ui.button("Refresh Match History").highlight().clicked() {
                 self.fetch_match_history().unwrap();
+
+                self.filter_by_mode();
             }
+
+            ui.checkbox(&mut self.is_classic_mode, "Classic Mode");
             ui.separator();
         });
     }
     
     pub fn render_match_history(&self, ui: &mut egui::Ui) {
-        static PADDING: f32 = 4.;
-        for (slot, history) in self.histories.read().iter().enumerate() {
-            log::debug!("rendering player {}", slot + 1);
-
-            let games = &history.game_history.game_list;
-            ui.add_space(PADDING);
-            let header = egui::RichText::new(format!("player {} game history: ", slot + 1))
-                .font(egui::FontId::new(14.0, egui::FontFamily::Proportional));
-            ui.label(header);
-            ui.add_space(PADDING);
-
-            for (index, game) in games.iter().enumerate() {
-                if index == 5 {
-                    break;
-                }
-                self.render_game(ui, game);
-            }
-            ui.separator();
+        if self.is_classic_mode {
+            self.render_filtered_history(ui);
+        } else {
+            self.render_unfiltered_history(ui);
         }
     }
 
@@ -141,5 +151,49 @@ impl LeagueApp {
             });
         });
         ui.add_space(3.);
+    }
+
+    fn render_unfiltered_history(&self, ui: &mut egui::Ui) {
+        static PADDING: f32 = 4.;
+        for (slot, history) in self.histories.read().iter().enumerate() {
+            log::debug!("rendering player {}", slot + 1);
+
+            let games = &history.game_history.game_list;
+            ui.add_space(PADDING);
+            let header = egui::RichText::new(format!("player {} game history: ", slot + 1))
+                .font(egui::FontId::new(14.0, egui::FontFamily::Proportional));
+            ui.label(header);
+            ui.add_space(PADDING);
+
+            for (index, game) in games.iter().enumerate() {
+                if index == 5 {
+                    break;
+                }
+                self.render_game(ui, game);
+            }
+            ui.separator();
+        }
+    }
+
+    fn render_filtered_history(&self, ui: &mut egui::Ui) {
+        static PADDING: f32 = 4.;
+        for (slot, history) in self.filtered_histories.read().iter().enumerate() {
+            log::debug!("rendering player {}", slot + 1);
+
+            let games = &history.game_history.game_list;
+            ui.add_space(PADDING);
+            let header = egui::RichText::new(format!("player {} game history: ", slot + 1))
+                .font(egui::FontId::new(14.0, egui::FontFamily::Proportional));
+            ui.label(header);
+            ui.add_space(PADDING);
+
+            for (index, game) in games.iter().enumerate() {
+                if index == 5 {
+                    break;
+                }
+                self.render_game(ui, game);
+            }
+            ui.separator();
+        }
     }
 }

@@ -51,6 +51,10 @@ impl Game {
         self.participants.get(0).unwrap()
     }
 
+    pub fn get_game_mode(&self) -> &str {
+        &self.game_mode
+    }
+
     pub fn get_game_info(&self) -> String {
         format!("{}, Mode: {}, Type: {}", 
             self.game_creation_date, self.game_mode, self.game_type)
