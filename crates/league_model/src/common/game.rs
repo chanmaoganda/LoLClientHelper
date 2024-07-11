@@ -47,27 +47,28 @@ pub struct Game {
 }
 
 impl Game {
+    fn get_player(&self) -> &Participant {
+        self.participants.get(0).unwrap()
+    }
+
     pub fn get_game_info(&self) -> String {
         format!("{}, Mode: {}, Type: {}", 
             self.game_creation_date, self.game_mode, self.game_type)
     }
 
-    pub fn get_player_info(&self) -> String {
-        let champion = self.participants.get(0).unwrap();
-        format!("player info: {}", champion.name_title())
+    pub fn get_name_title(&self) -> String {
+        self.get_player().name_title()
     }
 
     pub fn get_kda_result(&self) -> String {
-        let champion = self.participants.get(0).unwrap();
-        champion.kda_result()
+        self.get_player().kda_result()
     }
 
     pub fn get_champion_icon_url(&self) -> String {
-        self.participants.get(0).unwrap().champion_url()
+        self.get_player().champion_url()
     }
 
     pub fn get_summoner_spell_urls(&self) -> (String, String) {
-        let champion = self.participants.get(0).unwrap();
-        champion.summoner_spell_urls()
+        self.get_player().summoner_spell_urls()
     }
 }

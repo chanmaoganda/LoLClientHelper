@@ -35,7 +35,7 @@ lazy_static! {
 impl Participant {
     pub fn name_title(&self) -> String {
         let champion = HANDLER.get_champion_by_id(self.champion_id);
-        champion.name_title()
+        format!("player info: {}", champion.name_title())
     }
 
     pub fn kda_result(&self) -> String {

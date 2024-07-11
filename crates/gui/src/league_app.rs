@@ -8,6 +8,7 @@ pub struct LeagueApp {
     pub histories: Arc<RwLock<Vec<GameHistoryQuery>>>,
 }
 
+/// functional implement block
 impl LeagueApp {
     pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
         Self::customize_font(&cc.egui_ctx);
@@ -24,8 +25,13 @@ impl LeagueApp {
         let lcu_task = self.lcu_client.clone();
         rt.block_on(async move {
             let mut histories = histories_task.write();
-            histories.clear();
             let expect_history = lcu_task.read().get_summoner_match_histories().await.unwrap();
+            
+            if expect_history.is_empty() {
+                log::debug!("No match history found currently");
+                return;
+            }
+            histories.clear();
             histories.extend(expect_history);
         });
         log::info!("Done fetching match history");
@@ -38,17 +44,7 @@ impl LeagueApp {
 
 impl eframe::App for LeagueApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        
-        let mut style = (*ctx.style()).clone();
-        style.text_styles = [
-            (egui::TextStyle::Heading, egui::FontId::new(12.0, egui::FontFamily::Proportional)),
-            (egui::TextStyle::Body, egui::FontId::new(11.0, egui::FontFamily::Proportional)),
-            (egui::TextStyle::Monospace, egui::FontId::new(8.0, egui::FontFamily::Proportional)),
-            (egui::TextStyle::Button, egui::FontId::new(14.0, egui::FontFamily::Proportional)),
-            (egui::TextStyle::Small, egui::FontId::new(10.0, egui::FontFamily::Proportional)),
-        ]
-        .into();
-        ctx.set_style(style);
+        self.set_font_style(ctx);
 
         egui_extras::install_image_loaders(ctx);
         CentralPanel::default().show(ctx, |ui| {
@@ -61,6 +57,7 @@ impl eframe::App for LeagueApp {
     }
 }
 
+/// public functions to render egui components
 impl LeagueApp {
     pub fn render_refresh_button(&mut self, ui: &mut egui::Ui) {
         ui.horizontal(|ui| {
@@ -75,39 +72,39 @@ impl LeagueApp {
         static PADDING: f32 = 4.;
         for (slot, history) in self.histories.read().iter().enumerate() {
             log::debug!("rendering player {}", slot + 1);
+
             let games = &history.game_history.game_list;
             ui.add_space(PADDING);
             let header = egui::RichText::new(format!("player {} game history: ", slot + 1))
                 .font(egui::FontId::new(14.0, egui::FontFamily::Proportional));
             ui.label(header);
             ui.add_space(PADDING);
+
             for (index, game) in games.iter().enumerate() {
                 if index == 5 {
                     break;
                 }
-                let champion_icon_url = game.get_champion_icon_url();
-                let (spell1_url, spell2_url) = game.get_summoner_spell_urls();
-                ui.horizontal(|ui| {
-                    
-                    ui.vertical(|ui| {
-                        ui.add(Image::new(champion_icon_url).fit_to_exact_size(Vec2::new(30., 30.)));
-                        ui.horizontal(|ui| {
-                            ui.add(Image::new(spell1_url).fit_to_exact_size(Vec2::new(15., 15.)));
-                            ui.add(Image::new(spell2_url).fit_to_exact_size(Vec2::new(15., 15.)));
-                        });
-                    });
-
-                    ui.add_space(10.);
-                    ui.vertical(|ui| {
-                        ui.add(Label::new(game.get_game_info()));
-                        ui.add(Label::new(game.get_player_info()));
-                        ui.add(Label::new(game.get_kda_result()));
-                    });
-                });
-                ui.add_space(3.);
+                self.render_game(ui, game);
             }
             ui.separator();
         }
+    }
+
+}
+
+/// private functions to render egui components
+impl LeagueApp {
+    fn set_font_style(&self, ctx: &egui::Context) {
+        let mut style = (*ctx.style()).clone();
+        style.text_styles = [
+            (egui::TextStyle::Heading, egui::FontId::new(12.0, egui::FontFamily::Proportional)),
+            (egui::TextStyle::Body, egui::FontId::new(11.0, egui::FontFamily::Proportional)),
+            (egui::TextStyle::Monospace, egui::FontId::new(8.0, egui::FontFamily::Proportional)),
+            (egui::TextStyle::Button, egui::FontId::new(14.0, egui::FontFamily::Proportional)),
+            (egui::TextStyle::Small, egui::FontId::new(10.0, egui::FontFamily::Proportional)),
+        ]
+        .into();
+        ctx.set_style(style);
     }
 
     fn customize_font(ctx: &egui::Context) {
@@ -123,4 +120,26 @@ impl LeagueApp {
         ctx.set_fonts(fonts);
     }
 
+    fn render_game(&self, ui: &mut egui::Ui, game: &league_model::Game) {
+        let champion_icon_url = game.get_champion_icon_url();
+        let (spell1_url, spell2_url) = game.get_summoner_spell_urls();
+        ui.horizontal(|ui| {
+            
+            ui.vertical(|ui| {
+                ui.add(Image::new(champion_icon_url).fit_to_exact_size(Vec2::new(30., 30.)));
+                ui.horizontal(|ui| {
+                    ui.add(Image::new(spell1_url).fit_to_exact_size(Vec2::new(15., 15.)));
+                    ui.add(Image::new(spell2_url).fit_to_exact_size(Vec2::new(15., 15.)));
+                });
+            });
+
+            ui.add_space(10.);
+            ui.vertical(|ui| {
+                ui.add(Label::new(game.get_game_info()));
+                ui.add(Label::new(game.get_name_title()));
+                ui.add(Label::new(game.get_kda_result()));
+            });
+        });
+        ui.add_space(3.);
+    }
 }

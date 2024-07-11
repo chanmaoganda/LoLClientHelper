@@ -7,5 +7,5 @@ mod constants;
 pub use summoner::Summoner;
 pub use champion::{Champion, ParticipantIdentity, Participant};
 pub use runes::{FullRunes, PartialRunes, StatRune, RuneTree, Rune};
-pub use game::GameHistoryQuery;
+pub use game::*;
 pub use constants::*;
