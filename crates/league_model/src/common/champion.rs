@@ -42,8 +42,15 @@ impl Participant {
         format!("KDA: {}/{}/{} Win: {}", self.stats.kills, self.stats.deaths, self.stats.assists, self.stats.win)
     }
 
-    pub fn champion_key(&self) -> &u32 {
-        &self.champion_id
+    pub fn champion_url(&self) -> String {
+        format!("https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/{}.png", 
+            self.champion_id)
+    }
+
+    pub fn summoner_spell_urls(&self) -> (String, String){
+        let summoner_spell1 = HANDLER.get_summoner_spell_by_id(self.spell1_id);
+        let summoner_spell2 = HANDLER.get_summoner_spell_by_id(self.spell2_id);
+        (summoner_spell1.icon_url(), summoner_spell2.icon_url())
     }
 }
 

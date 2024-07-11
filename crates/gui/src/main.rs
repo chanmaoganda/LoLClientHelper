@@ -17,7 +17,7 @@ fn main() -> Result<(), eframe::Error> {
     };
 
     eframe::run_native(
-        "Match History",
+        "Lillia - League of Legends Client Helper",
         main_win_opts,
         Box::new(move |cc| {
             Ok(Box::new(LeagueApp::new(cc)))

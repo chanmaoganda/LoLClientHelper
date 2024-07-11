@@ -86,8 +86,17 @@ impl LeagueApp {
                     break;
                 }
                 let champion_icon_url = game.get_champion_icon_url();
+                let (spell1_url, spell2_url) = game.get_summoner_spell_urls();
                 ui.horizontal(|ui| {
-                    ui.add(Image::new(champion_icon_url).fit_to_exact_size(Vec2::new(30., 30.)));
+                    
+                    ui.vertical(|ui| {
+                        ui.add(Image::new(champion_icon_url).fit_to_exact_size(Vec2::new(30., 30.)));
+                        ui.horizontal(|ui| {
+                            ui.add(Image::new(spell1_url).fit_to_exact_size(Vec2::new(15., 15.)));
+                            ui.add(Image::new(spell2_url).fit_to_exact_size(Vec2::new(15., 15.)));
+                        });
+                    });
+
                     ui.add_space(10.);
                     ui.vertical(|ui| {
                         ui.add(Label::new(game.get_game_info()));

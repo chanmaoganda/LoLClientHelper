@@ -63,7 +63,11 @@ impl Game {
     }
 
     pub fn get_champion_icon_url(&self) -> String {
-        format!("https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/{}.png", 
-            self.participants.get(0).unwrap().champion_key())
+        self.participants.get(0).unwrap().champion_url()
+    }
+
+    pub fn get_summoner_spell_urls(&self) -> (String, String) {
+        let champion = self.participants.get(0).unwrap();
+        champion.summoner_spell_urls()
     }
 }
