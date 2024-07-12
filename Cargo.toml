@@ -35,7 +35,7 @@ log = { version = "0.4.22"}
 lazy_static = "1.5.0"
 
 
-league_model = { path = "crates/league_model" }
-client_api = { path = "crates/client_api" }
-lcu_api = { path = "crates/lcu_api" }
-gui = { path = "crates/gui" }
+league_model = { path = "crates/league_model", version = "0.1.0" }
+client_api = { path = "crates/client_api", version = "0.1.0" }
+lcu_api = { path = "crates/lcu_api", version = "0.1.0" }
+gui = { path = "crates/gui", version = "0.1.0" }
