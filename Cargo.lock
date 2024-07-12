@@ -2342,7 +2342,6 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "client_api",
- "gui",
  "lcu_api",
  "league_model",
  "serde",

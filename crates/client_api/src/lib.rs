@@ -2,4 +2,4 @@ mod client;
 mod error;
 
 pub use client::LoLClient;
-pub use client::LoLInfoIdentifier::{*};
+pub use client::LoLInfoIdentifier;

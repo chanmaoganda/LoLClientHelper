@@ -7,8 +7,6 @@ edition = "2021"
 client_api = { workspace = true }
 lcu_api = { workspace = true }
 league_model = { workspace = true }
-gui ={ workspace = true }
-
 tokio = { workspace = true }
 anyhow = { workspace = true }
 serde = { workspace = true }
