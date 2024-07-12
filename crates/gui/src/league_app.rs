@@ -23,7 +23,7 @@ impl LeagueApp {
     }
 
     pub fn fetch_match_history(&mut self) -> anyhow::Result<bool> {
-        log::info!("Fetching match history");
+        log::debug!("Fetching match history");
         let rt = tokio::runtime::Runtime::new().unwrap();
         let histories_task = self.histories.clone();
         let filtered_histories_task = self.filtered_histories.clone();
@@ -46,7 +46,7 @@ impl LeagueApp {
 
             log::info!("History Updated!");
         });
-        log::info!("Match history size: {}", self.histories.read().len());
+        log::debug!("Match history size: {}", self.histories.read().len());
         Ok(self.histories.read().len() > 0)
     }
 
@@ -55,10 +55,11 @@ impl LeagueApp {
         if !self.is_classic_mode {
             return;
         }
-        log::info!("filtering history by mode");
+        log::debug!("filtering history by mode");
         histories.iter_mut().for_each(|query|{
             let games = &mut query.game_history.game_list;
             games.retain(|game| game.get_game_mode() == "CLASSIC");
+            log::debug!("filtered game count: {}", games.len());
         });
     }
 }
@@ -68,7 +69,7 @@ impl eframe::App for LeagueApp {
         self.set_font_style(ctx);
         egui_extras::install_image_loaders(ctx);
         CentralPanel::default().show(ctx, |ui| {
-            self.render_refresh_button(ui);
+            self.render_header_options(ui);
             ScrollArea::vertical().show(ui, |ui| {
                 self.render_match_history(ui);
             });
@@ -79,7 +80,7 @@ impl eframe::App for LeagueApp {
 
 /// public functions to render egui components
 impl LeagueApp {
-    pub fn render_refresh_button(&mut self, ui: &mut egui::Ui) {
+    pub fn render_header_options(&mut self, ui: &mut egui::Ui) {
         ui.horizontal(|ui| {
             if ui.button("Refresh Match History").highlight().clicked() {
                 self.fetch_match_history().unwrap();
@@ -87,19 +88,18 @@ impl LeagueApp {
                 self.filter_by_mode();
             }
 
-            ui.checkbox(&mut self.is_classic_mode, "Classic Mode");
+            ui.checkbox(&mut self.is_classic_mode, "Filter Classic Mode");
             ui.separator();
         });
     }
     
     pub fn render_match_history(&self, ui: &mut egui::Ui) {
         if self.is_classic_mode {
-            self.render_filtered_history(ui);
-        } else {
-            self.render_unfiltered_history(ui);
+            Self::render_game_history(ui, &self.filtered_histories);
+            return;
         }
+        Self::render_game_history(ui, &self.histories);
     }
-
 }
 
 /// private functions to render egui components
@@ -130,7 +130,7 @@ impl LeagueApp {
         ctx.set_fonts(fonts);
     }
 
-    fn render_game(&self, ui: &mut egui::Ui, game: &league_model::Game) {
+    fn render_game(ui: &mut egui::Ui, game: &league_model::Game) {
         let champion_icon_url = game.get_champion_icon_url();
         let (spell1_url, spell2_url) = game.get_summoner_spell_urls();
         ui.horizontal(|ui| {
@@ -153,9 +153,9 @@ impl LeagueApp {
         ui.add_space(3.);
     }
 
-    fn render_unfiltered_history(&self, ui: &mut egui::Ui) {
+    fn render_game_history(ui: &mut egui::Ui, histories: &Arc<RwLock<Vec<GameHistoryQuery>>>) {
         static PADDING: f32 = 4.;
-        for (slot, history) in self.histories.read().iter().enumerate() {
+        for (slot, history) in histories.read().iter().enumerate() {
             log::debug!("rendering player {}", slot + 1);
 
             let games = &history.game_history.game_list;
@@ -169,29 +169,7 @@ impl LeagueApp {
                 if index == 5 {
                     break;
                 }
-                self.render_game(ui, game);
-            }
-            ui.separator();
-        }
-    }
-
-    fn render_filtered_history(&self, ui: &mut egui::Ui) {
-        static PADDING: f32 = 4.;
-        for (slot, history) in self.filtered_histories.read().iter().enumerate() {
-            log::debug!("rendering player {}", slot + 1);
-
-            let games = &history.game_history.game_list;
-            ui.add_space(PADDING);
-            let header = egui::RichText::new(format!("player {} game history: ", slot + 1))
-                .font(egui::FontId::new(14.0, egui::FontFamily::Proportional));
-            ui.label(header);
-            ui.add_space(PADDING);
-
-            for (index, game) in games.iter().enumerate() {
-                if index == 5 {
-                    break;
-                }
-                self.render_game(ui, game);
+                Self::render_game(ui, game);
             }
             ui.separator();
         }
