@@ -27,3 +27,10 @@ opt-level = 3
 [[bin]]
 name = "LeagueClientHelper"
 path = "src/main.rs"
+
+[features]
+default = [ "release" ]
+
+debug = []
+
+release = []

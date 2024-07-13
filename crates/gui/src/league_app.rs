@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use eframe::egui::{self, mutex::RwLock, CentralPanel, Image, Label, ScrollArea, Vec2};
+use eframe::egui::{self, mutex::RwLock, CentralPanel, Image, Vec2};
 use league_model::GameHistoryQuery;
 
 pub struct LeagueApp {
@@ -70,9 +70,8 @@ impl eframe::App for LeagueApp {
         egui_extras::install_image_loaders(ctx);
         CentralPanel::default().show(ctx, |ui| {
             self.render_header_options(ui);
-            ScrollArea::vertical().show(ui, |ui| {
-                self.render_match_history(ui);
-            });
+            self.render_match_history(ui);
+
         });
 
     }
@@ -94,11 +93,14 @@ impl LeagueApp {
     }
     
     pub fn render_match_history(&self, ui: &mut egui::Ui) {
-        if self.is_classic_mode {
-            Self::render_game_history(ui, &self.filtered_histories);
-            return;
-        }
-        Self::render_game_history(ui, &self.histories);
+        ui.horizontal(|ui| {
+            if self.is_classic_mode {
+                Self::render_game_history(ui, &self.filtered_histories);
+                return;
+            }
+            Self::render_game_history(ui, &self.histories);
+        });
+        
     }
 }
 
@@ -129,7 +131,8 @@ impl LeagueApp {
             .insert(0, "consola".to_owned());
         ctx.set_fonts(fonts);
     }
-
+    
+    #[cfg(feature = "debug")]
     fn render_game(ui: &mut egui::Ui, game: &league_model::Game) {
         let champion_icon_url = game.get_champion_icon_url();
         let (spell1_url, spell2_url) = game.get_summoner_spell_urls();
@@ -153,25 +156,50 @@ impl LeagueApp {
         ui.add_space(3.);
     }
 
-    fn render_game_history(ui: &mut egui::Ui, histories: &Arc<RwLock<Vec<GameHistoryQuery>>>) {
-        static PADDING: f32 = 4.;
-        for (slot, history) in histories.read().iter().enumerate() {
-            log::debug!("rendering player {}", slot + 1);
-
-            let games = &history.game_history.game_list;
-            ui.add_space(PADDING);
-            let header = egui::RichText::new(format!("player {} game history: ", slot + 1))
-                .font(egui::FontId::new(14.0, egui::FontFamily::Proportional));
-            ui.label(header);
-            ui.add_space(PADDING);
-
-            for (index, game) in games.iter().enumerate() {
-                if index == 5 {
-                    break;
-                }
-                Self::render_game(ui, game);
+    #[cfg(feature = "release")]
+    fn render_game(ui: &mut egui::Ui, game: &league_model::Game) {
+        let champion_icon_url = game.get_champion_icon_url();
+        let (spell1_url, spell2_url) = game.get_summoner_spell_urls();
+        ui.vertical(|ui| {
+            ui.horizontal(|ui| {
+                ui.add(Image::new(champion_icon_url).fit_to_exact_size(Vec2::new(30., 30.)));
+                ui.vertical(|ui| {
+                    ui.add(Image::new(spell1_url).fit_to_exact_size(Vec2::new(15., 15.)));
+                    ui.add(Image::new(spell2_url).fit_to_exact_size(Vec2::new(15., 15.)));
+                });
+            });
+            ui.label(egui::RichText::new(game.get_kda_result()).color(egui::Color32::DARK_BLUE));
+            if game.get_win_status() {
+                ui.label(egui::RichText::new("Win").color(egui::Color32::GREEN));
+            } else {
+                ui.label(egui::RichText::new("Lose").color(egui::Color32::RED));
             }
-            ui.separator();
-        }
+        });
+    }
+
+    fn render_game_history(ui: &mut egui::Ui, histories: &Arc<RwLock<Vec<GameHistoryQuery>>>) {
+        ui.horizontal(|ui| {
+            static PADDING: f32 = 4.;
+            for (slot, history) in histories.read().iter().enumerate() {
+                log::debug!("rendering player {}", slot + 1);
+    
+                ui.vertical(|ui| {
+                    let games = &history.game_history.game_list;
+                    ui.add_space(PADDING);
+                    let header = egui::RichText::new(format!("player {}: ", slot + 1))
+                        .font(egui::FontId::new(14.0, egui::FontFamily::Proportional));
+                    ui.label(header);
+                    ui.add_space(PADDING);
+        
+                    for (index, game) in games.iter().enumerate() {
+                        if index == 5 {
+                            break;
+                        }
+                        Self::render_game(ui, game);
+                    }
+                });
+                ui.separator();
+            }
+        });
     }
 }

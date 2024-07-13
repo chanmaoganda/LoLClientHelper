@@ -39,7 +39,11 @@ impl Participant {
     }
 
     pub fn kda_result(&self) -> String {
-        format!("KDA: {}/{}/{} Win: {}", self.stats.kills, self.stats.deaths, self.stats.assists, self.stats.win)
+        format!("KDA: {}/{}/{}", self.stats.kills, self.stats.deaths, self.stats.assists)
+    }
+
+    pub fn win_status(&self) -> bool {
+        self.stats.win.clone()
     }
 
     pub fn champion_url(&self) -> String {

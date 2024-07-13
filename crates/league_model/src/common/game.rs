@@ -68,6 +68,10 @@ impl Game {
         self.get_player().kda_result()
     }
 
+    pub fn get_win_status(&self) -> bool {
+        self.get_player().win_status()
+    }
+
     pub fn get_champion_icon_url(&self) -> String {
         self.get_player().champion_url()
     }
