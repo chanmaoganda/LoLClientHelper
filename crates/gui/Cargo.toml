@@ -2,6 +2,8 @@
 name = "gui"
 version = "0.1.0"
 edition = "2021"
+build = "build.rs"
+
 
 [dependencies]
 eframe = { version = "0.28.1" }
@@ -15,3 +17,13 @@ anyhow = { workspace = true }
 tokio = { workspace = true }
 env_logger = { workspace = true }
 log = { workspace = true }
+
+[build-dependencies]
+winres = "0.1"
+
+[profile.release]
+opt-level = 3
+
+[[bin]]
+name = "LeagueClientHelper"
+path = "src/main.rs"
