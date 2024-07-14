@@ -90,20 +90,20 @@ impl LcuClient {
         Ok(summoners)
     }
 
-    pub async fn get_summoner_match_history(&self, summoner: Summoner) -> Result<GameHistoryQuery, ModelError> {
+    pub async fn get_summoner_match_history(&self, summoner: Summoner, game_count: u32) -> Result<GameHistoryQuery, ModelError> {
 
-        let url = format!("/lol-match-history/v1/products/lol/{}/matches{}", summoner.puuid, Self::index_range_query(0, 19));
+        let url = format!("/lol-match-history/v1/products/lol/{}/matches{}", summoner.puuid, Self::index_range_query(0, game_count - 1));
         let history = self.get(&url)
             .await.map_err(|_| ModelError::HistoryNotFound)?;
 
         Ok(history)
     }
 
-    pub async fn get_summoner_match_histories(&self) -> anyhow::Result<Vec<GameHistoryQuery>> {
+    pub async fn get_summoner_match_histories(&self, game_count: u32) -> anyhow::Result<Vec<GameHistoryQuery>> {
         let summoners = self.get_team_summoners().await?;
-        let mut histories = Vec::with_capacity(10);
+        let mut histories = Vec::with_capacity(game_count as usize);
         for summoner in summoners {
-            let history = self.get_summoner_match_history(summoner).await?;
+            let history = self.get_summoner_match_history(summoner, game_count).await?;
             histories.push(history);
         }
         Ok(histories)

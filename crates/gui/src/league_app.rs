@@ -8,6 +8,8 @@ pub struct LeagueApp {
     pub histories: Arc<RwLock<Vec<GameHistoryQuery>>>,
     pub filtered_histories: Arc<RwLock<Vec<GameHistoryQuery>>>,
     pub is_classic_mode: bool,
+    pub max_game_count: u32,
+    pub display_size: u32,
 }
 
 /// functional implement block
@@ -19,6 +21,8 @@ impl LeagueApp {
             histories: Arc::new(RwLock::new(vec![])),
             filtered_histories: Arc::new(RwLock::new(vec![])),
             is_classic_mode: false,
+            max_game_count: 20,
+            display_size: 5,
         }
     }
 
@@ -28,11 +32,12 @@ impl LeagueApp {
         let histories_task = self.histories.clone();
         let filtered_histories_task = self.filtered_histories.clone();
         let lcu_task = self.lcu_client.clone();
+        let game_count = self.max_game_count;
         rt.block_on(async move {
             let mut histories = histories_task.write();
             let mut filtered_history = filtered_histories_task.write();
 
-            let expect_history = lcu_task.read().get_summoner_match_histories().await.unwrap();
+            let expect_history = lcu_task.read().get_summoner_match_histories(game_count).await.unwrap();
             
             if expect_history.is_empty() {
                 log::debug!("No match history found currently");
@@ -70,8 +75,9 @@ impl eframe::App for LeagueApp {
         egui_extras::install_image_loaders(ctx);
         CentralPanel::default().show(ctx, |ui| {
             self.render_header_options(ui);
-            self.render_match_history(ui);
-
+            egui::ScrollArea::vertical().show(ui, |ui| {
+                self.render_match_history(ui);
+            });
         });
 
     }
@@ -81,24 +87,26 @@ impl eframe::App for LeagueApp {
 impl LeagueApp {
     pub fn render_header_options(&mut self, ui: &mut egui::Ui) {
         ui.horizontal(|ui| {
-            if ui.button("Refresh Match History").highlight().clicked() {
+            if ui.button("Refresh").highlight().clicked() {
                 self.fetch_match_history().unwrap();
 
                 self.filter_by_mode();
             }
 
-            ui.checkbox(&mut self.is_classic_mode, "Filter Classic Mode");
+            ui.checkbox(&mut self.is_classic_mode, "Classic Mode");
             ui.separator();
+
+            ui.add(egui::Slider::new(&mut self.display_size, 1..=self.max_game_count).text("Display Count"));
         });
     }
     
     pub fn render_match_history(&self, ui: &mut egui::Ui) {
         ui.horizontal(|ui| {
             if self.is_classic_mode {
-                Self::render_game_history(ui, &self.filtered_histories);
+                self.render_game_history(ui, &self.filtered_histories);
                 return;
             }
-            Self::render_game_history(ui, &self.histories);
+            self.render_game_history(ui, &self.histories);
         });
         
     }
@@ -168,6 +176,7 @@ impl LeagueApp {
                     ui.add(Image::new(spell2_url).fit_to_exact_size(Vec2::new(15., 15.)));
                 });
             });
+            ui.label(egui::RichText::new(game.get_date()));
             ui.label(egui::RichText::new(game.get_kda_result()).color(egui::Color32::DARK_BLUE));
             if game.get_win_status() {
                 ui.label(egui::RichText::new("Win").color(egui::Color32::GREEN));
@@ -177,7 +186,7 @@ impl LeagueApp {
         });
     }
 
-    fn render_game_history(ui: &mut egui::Ui, histories: &Arc<RwLock<Vec<GameHistoryQuery>>>) {
+    fn render_game_history(&self, ui: &mut egui::Ui, histories: &Arc<RwLock<Vec<GameHistoryQuery>>>) {
         ui.horizontal(|ui| {
             static PADDING: f32 = 4.;
             for (slot, history) in histories.read().iter().enumerate() {
@@ -192,7 +201,7 @@ impl LeagueApp {
                     ui.add_space(PADDING);
         
                     for (index, game) in games.iter().enumerate() {
-                        if index == 5 {
+                        if index == self.display_size as usize {
                             break;
                         }
                         Self::render_game(ui, game);

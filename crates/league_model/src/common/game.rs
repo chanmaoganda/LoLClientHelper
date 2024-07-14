@@ -60,6 +60,16 @@ impl Game {
             self.game_creation_date, self.game_mode, self.game_type)
     }
 
+    pub fn get_timestamp(&self) -> String {
+        format!("{}", self.game_creation_date)
+    }
+
+    pub fn get_date(&self) -> String {
+        let mut timestamp = self.game_creation_date.clone();
+        let _ = timestamp.split_off(10);
+        timestamp
+    }
+
     pub fn get_name_title(&self) -> String {
         self.get_player().name_title()
     }
