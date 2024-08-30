@@ -100,8 +100,9 @@ impl LcuClient {
     }
 
     pub async fn get_summoner_match_histories(&self, game_count: u32) -> anyhow::Result<Vec<GameHistoryQuery>> {
+        static SUMMONER_COUNT: usize = 5;
         let summoners = self.get_team_summoners().await?;
-        let mut histories = Vec::with_capacity(game_count as usize);
+        let mut histories = Vec::with_capacity(SUMMONER_COUNT);
         for summoner in summoners {
             let history = self.get_summoner_match_history(summoner, game_count).await?;
             histories.push(history);
